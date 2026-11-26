@@ -1,0 +1,1989 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YEP Party Raffle</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #0b0d17;
+      --surface: #131626;
+      --surface-2: #1a1e33;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.16);
+      --accent: #f59e0b;
+      --accent-2: #ef4444;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --success: #22c55e;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top center, #181c36 0%, var(--bg) 70%);
+      color: var(--text);
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    header {
+      height: 46px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      background: rgba(11, 13, 23, 0.85);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
+    }
+
+    header h1 {
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #fbbf24, #fb923c);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-status {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .header-status strong {
+      color: var(--text);
+    }
+
+    .save-badge {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: #4ade80;
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+      padding: 2px 8px;
+      border-radius: 999px;
+      transition: opacity 0.2s;
+    }
+
+    .save-badge.saving {
+      color: var(--accent);
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(245, 158, 11, 0.25);
+    }
+
+    .hdr-btn {
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface-2);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.7rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .hdr-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--accent);
+    }
+
+    .hdr-btn.presenter-active {
+      background: var(--accent);
+      color: #111827;
+      border-color: var(--accent);
+    }
+
+    /* ── 3-Column Workspace ── */
+    .app {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 270px 1fr 270px;
+      gap: 12px;
+      padding: 12px;
+    }
+
+    body.presenter-mode .app {
+      grid-template-columns: 270px 1fr;
+    }
+
+    body.presenter-mode #participantsPanel,
+    body.presenter-mode .admin-only {
+      display: none !important;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .panel-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+    }
+
+    .panel-badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--accent);
+      background: rgba(245, 158, 11, 0.12);
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+
+    /* ── LEFT: Prizes ── */
+    .prizes-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .prize-card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+      flex-shrink: 0;
+    }
+
+    .prize-card:hover {
+      border-color: rgba(245, 158, 11, 0.4);
+    }
+
+    .prize-card.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent), 0 8px 24px rgba(245, 158, 11, 0.15);
+    }
+
+    .prize-card.won {
+      opacity: 0.45;
+    }
+
+    .prize-card.won::after {
+      content: 'RAFFLED';
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: var(--success);
+      color: #052e16;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 800;
+      font-size: 0.65rem;
+      letter-spacing: 1px;
+      z-index: 3;
+    }
+
+    .prize-img {
+      height: 104px;
+      background: rgba(0, 0, 0, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .prize-img img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .prize-img .ph {
+      color: rgba(255, 255, 255, 0.32);
+      font-size: 0.72rem;
+      font-weight: 500;
+      border: 1px dashed rgba(255, 255, 255, 0.15);
+      padding: 8px 14px;
+      border-radius: 8px;
+    }
+
+    .prize-img:hover .ph {
+      color: var(--accent);
+      border-color: rgba(245, 158, 11, 0.5);
+    }
+
+    .prize-remove {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(0, 0, 0, 0.65);
+      color: #cbd5e1;
+      font-size: 0.7rem;
+      font-weight: 700;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.15s, background 0.15s;
+      z-index: 4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .prize-card:hover .prize-remove {
+      opacity: 1;
+    }
+
+    .prize-remove:hover {
+      background: var(--accent-2);
+      color: #fff;
+    }
+
+    .prize-info {
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .prize-info input[type="text"] {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .prize-info input[type="text"]:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .prize-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .qty-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .qty-wrap input[type="number"] {
+      width: 48px;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.76rem;
+      font-weight: 700;
+    }
+
+    .prize-select-pill {
+      font-size: 0.66rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--muted);
+    }
+
+    .prize-card.active .prize-select-pill {
+      background: var(--accent);
+      color: #111827;
+    }
+
+    .panel-footer {
+      padding: 10px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .add-prize-btn {
+      width: 100%;
+      padding: 9px;
+      border-radius: 8px;
+      border: 1px dashed rgba(245, 158, 11, 0.45);
+      background: rgba(245, 158, 11, 0.06);
+      color: var(--accent);
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .add-prize-btn:hover {
+      background: rgba(245, 158, 11, 0.14);
+      border-color: var(--accent);
+    }
+
+    /* ── CENTER: Stage & Wheels ── */
+    .stage-panel {
+      background: radial-gradient(circle at center, rgba(30, 35, 66, 0.55) 0%, rgba(19, 22, 38, 0.8) 100%);
+      padding: 10px 14px;
+      gap: 8px;
+      justify-content: space-between;
+    }
+
+    /* Winner Banner Above Wheel */
+    .winner-banner {
+      min-height: 54px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .winner-idle {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+    }
+
+    .winner-idle strong {
+      color: var(--accent);
+    }
+
+    .winner-reveal {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      animation: popReveal 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .winner-reveal.show {
+      display: flex;
+    }
+
+    .wr-tag {
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--accent);
+    }
+
+    .wr-name {
+      font-size: 1.55rem;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.15;
+      text-shadow: 0 2px 18px rgba(245, 158, 11, 0.35);
+    }
+
+    .wr-prize {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    @keyframes popReveal {
+      0% {
+        transform: scale(0.75);
+        opacity: 0;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    /* Wheels Container */
+    .wheels-area {
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      align-content: center;
+      gap: 14px;
+      overflow: hidden;
+    }
+
+    .wheel-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    /* Per-wheel winner pill ABOVE each wheel */
+    .slot-top {
+      min-height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .slot-num {
+      font-size: 0.66rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .slot-winner-pill {
+      display: none;
+      background: linear-gradient(135deg, var(--accent), #f97316);
+      color: #111827;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 2px 10px;
+      border-radius: 999px;
+      max-width: 180px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      box-shadow: 0 2px 10px rgba(245, 158, 11, 0.4);
+      animation: popReveal 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .slot-winner-pill.show {
+      display: inline-block;
+    }
+
+    .wheel-box {
+      position: relative;
+      aspect-ratio: 1;
+    }
+
+    .wheel-box canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.45));
+    }
+
+    .wheel-pointer {
+      position: absolute;
+      top: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 3;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+    }
+
+    .wheel-center-btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      border: 3px solid #fff;
+      background: linear-gradient(135deg, #fbbf24, #ea580c);
+      color: #fff;
+      font-family: inherit;
+      font-weight: 900;
+      letter-spacing: 1px;
+      cursor: pointer;
+      z-index: 4;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+      transition: transform 0.15s;
+    }
+
+    .wheel-center-btn:hover:not(:disabled) {
+      transform: translate(-50%, -50%) scale(1.08);
+    }
+
+    .wheel-center-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Controls Bar */
+    .controls-bar {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding-top: 4px;
+    }
+
+    .ctrl-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 10px;
+    }
+
+    .ctrl-label {
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .tgl {
+      position: relative;
+      width: 38px;
+      height: 20px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .tgl input {
+      display: none;
+    }
+
+    .tgl-track {
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.14);
+      border-radius: 999px;
+      transition: background 0.2s;
+    }
+
+    .tgl-track::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 0.2s;
+    }
+
+    .tgl input:checked+.tgl-track {
+      background: var(--accent);
+    }
+
+    .tgl input:checked+.tgl-track::after {
+      transform: translateX(18px);
+    }
+
+    .count-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .count-input {
+      width: 52px;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      padding: 4px 6px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .count-input:disabled {
+      opacity: 0.35;
+    }
+
+    .spin-btn {
+      padding: 9px 28px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #fbbf24, #ea580c);
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(234, 88, 12, 0.35);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .spin-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(234, 88, 12, 0.5);
+    }
+
+    .spin-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    /* Results Popup Rectangle Modal */
+    .results-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 7, 15, 0.72);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 900;
+      padding: 20px;
+    }
+
+    .results-modal-backdrop.show {
+      display: flex;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .results-modal {
+      width: min(680px, 94vw);
+      background: linear-gradient(160deg, #1a1f38 0%, #111424 100%);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      border-radius: 16px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 40px rgba(245, 158, 11, 0.12);
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      animation: popReveal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .results-modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+
+    .results-modal-prize {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .results-modal-prize img {
+      width: 48px;
+      height: 48px;
+      object-fit: contain;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 4px;
+      border: 1px solid var(--border);
+    }
+
+    .results-modal-title {
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--accent);
+    }
+
+    .results-modal-sub {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .results-close-btn {
+      padding: 7px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface-2);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      cursor: pointer;
+    }
+
+    .results-close-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: var(--accent);
+    }
+
+    .results-textbox {
+      background: rgba(0, 0, 0, 0.32);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      max-height: 55vh;
+      overflow-y: auto;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .results-grid.single-col {
+      grid-template-columns: 1fr;
+    }
+
+    .res-item {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.28);
+      border-radius: 8px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .results-grid.single-col .res-item {
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .res-num {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .res-name {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .results-grid.single-col .res-name {
+      font-size: 1.35rem;
+    }
+
+    /* ── RIGHT: Participants ── */
+    .names-body {
+      flex: 1;
+      min-height: 0;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .names-body textarea {
+      flex: 1;
+      min-height: 0;
+      resize: none;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.8rem;
+      line-height: 1.55;
+    }
+
+    .names-body textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .names-body textarea::placeholder {
+      color: rgba(148, 163, 184, 0.45);
+    }
+
+    .names-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .names-actions button {
+      padding: 7px 6px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      font-family: inherit;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-load {
+      background: #4f46e5;
+      color: #fff;
+      border-color: transparent !important;
+    }
+
+    .btn-load:hover {
+      background: #4338ca;
+    }
+
+    .btn-shuffle {
+      background: var(--surface-2);
+      color: var(--text);
+    }
+
+    .btn-shuffle:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-clear {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+    }
+
+    .btn-clear:hover {
+      background: rgba(239, 68, 68, 0.28);
+    }
+
+    .opt-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 8px;
+      background: var(--surface-2);
+      border-radius: 8px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+
+    .reset-btn {
+      width: 100%;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      background: rgba(239, 68, 68, 0.1);
+      color: #fca5a5;
+      font-family: inherit;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .reset-btn:hover {
+      background: rgba(239, 68, 68, 0.22);
+    }
+
+    /* ── Confetti ── */
+    .confetti-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    .confetti-bit {
+      position: absolute;
+      top: -20px;
+      animation: confDrop linear forwards;
+    }
+
+    @keyframes confDrop {
+      to {
+        top: 108vh;
+        transform: rotate(720deg);
+      }
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.28);
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <h1>YEP Party Raffle</h1>
+    </div>
+    <div class="header-right">
+      <div class="header-status" id="headerStatus">Select a prize and add participants to start</div>
+      <span class="save-badge admin-only" id="saveBadge">Saved</span>
+      <button class="hdr-btn admin-only" onclick="exportSaveFile()" title="Download save file (.json)">Save
+        File</button>
+      <button class="hdr-btn admin-only" onclick="importSaveFile()" title="Load save file (.json)">Load File</button>
+      <button class="hdr-btn" id="presenterBtn" onclick="togglePresenterMode()"
+        title="Hide participant list when casting to another screen">Presenter View</button>
+    </div>
+  </header>
+
+  <main class="app">
+
+    <!-- LEFT: PRIZES -->
+    <section class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Prizes</span>
+        <span class="panel-badge" id="prizeCountBadge">1</span>
+      </div>
+      <div class="prizes-body" id="prizesList"></div>
+      <div class="panel-footer">
+        <button class="add-prize-btn" onclick="addPrize()">+ Add Prize</button>
+      </div>
+    </section>
+
+    <!-- CENTER: STAGE -->
+    <section class="panel stage-panel">
+      <div class="winner-banner">
+        <div class="winner-idle" id="winnerIdle">
+          Ready to spin
+        </div>
+        <div class="winner-reveal" id="winnerReveal">
+          <span class="wr-tag" id="wrTag">Winner</span>
+          <span class="wr-name" id="wrName"></span>
+          <span class="wr-prize" id="wrPrize"></span>
+        </div>
+      </div>
+
+      <div class="wheels-area" id="wheelsArea"></div>
+
+      <div class="controls-bar">
+        <div class="ctrl-pill">
+          <span class="ctrl-label">Multi-Raffle</span>
+          <label class="tgl" title="Run multiple raffle wheels at once">
+            <input type="checkbox" id="multiToggle" onchange="onToggleMulti()">
+            <span class="tgl-track"></span>
+          </label>
+          <div class="count-wrap">
+            <span class="ctrl-label">Wheels</span>
+            <input type="number" class="count-input" id="raffleCount" min="1" max="20" value="2" disabled
+              onchange="onCountChange()" oninput="onCountChange()">
+          </div>
+        </div>
+        <button class="spin-btn" id="spinBtn" onclick="startSpin()">Spin</button>
+      </div>
+    </section>
+
+    <!-- RIGHT: PARTICIPANTS -->
+    <section class="panel" id="participantsPanel">
+      <div class="panel-header">
+        <span class="panel-title">Participants</span>
+        <span class="panel-badge" id="nameCount">0</span>
+      </div>
+      <div class="names-body">
+        <textarea id="namesInput"
+          placeholder="Paste or type names, one per line...&#10;&#10;No limit on entries."></textarea>
+        <div class="names-actions">
+          <button class="btn-load" onclick="loadNames()">Load</button>
+          <button class="btn-shuffle" onclick="shuffleNames()">Shuffle</button>
+          <button class="btn-clear" onclick="clearNames()">Clear</button>
+        </div>
+        <div class="opt-row">
+          <span>Remove winners automatically</span>
+          <label class="tgl">
+            <input type="checkbox" id="removeWinnerToggle" checked>
+            <span class="tgl-track"></span>
+          </label>
+        </div>
+      </div>
+      <div class="panel-footer">
+        <button class="reset-btn" onclick="resetAll()">Reset Everything</button>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="results-modal-backdrop" id="resultsModal" onclick="if(event.target===this) closeResultsModal()">
+    <div class="results-modal">
+      <div class="results-modal-head">
+        <div class="results-modal-prize">
+          <img id="rmPrizeImg" src="" alt="" style="display:none;">
+          <div>
+            <div class="results-modal-title" id="rmTitle">Raffle Results</div>
+            <div class="results-modal-sub" id="rmPrizeName">Winners</div>
+          </div>
+        </div>
+        <button class="results-close-btn" onclick="closeResultsModal()">Close</button>
+      </div>
+      <div class="results-textbox">
+        <div class="results-grid" id="resultsGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="confetti-layer" id="confettiLayer"></div>
+
+  <script>
+    // ═══════════════════════════════════════
+    //  STATE
+    // ═══════════════════════════════════════
+    let participants = [];
+    let spinning = false;
+    let prizes = [];
+    let activePrizeIdx = null;
+    let allWinners = [];
+    let wheels = [];
+    let prizeIdCounter = 0;
+
+    const COLORS = [
+      '#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6',
+      '#8b5cf6', '#ec4899', '#f43f5e', '#14b8a6', '#a855f7', '#6366f1',
+      '#10b981', '#f59e0b', '#84cc16', '#0ea5e9', '#d946ef', '#fb923c'
+    ];
+
+    // ═══════════════════════════════════════
+    //  PRIZES
+    // ═══════════════════════════════════════
+    function addPrize(name = '', qty = 1) {
+      prizes.push({ id: prizeIdCounter++, name, qty, imgSrc: null, won: false });
+      if (activePrizeIdx === null) activePrizeIdx = 0;
+      renderPrizes();
+      updateHeaderStatus();
+      scheduleSave();
+    }
+
+    function removePrize(id) {
+      const removedIdx = prizes.findIndex(p => p.id === id);
+      prizes = prizes.filter(p => p.id !== id);
+      if (activePrizeIdx === removedIdx) activePrizeIdx = prizes.length ? 0 : null;
+      else if (activePrizeIdx > removedIdx) activePrizeIdx--;
+      renderPrizes();
+      updateHeaderStatus();
+      scheduleSave();
+    }
+
+    function selectPrize(idx) {
+      activePrizeIdx = activePrizeIdx === idx ? null : idx;
+      if (activePrizeIdx !== null && prizes[idx]) {
+        const qty = prizes[idx].qty;
+        const multiToggle = document.getElementById('multiToggle');
+        const countInput = document.getElementById('raffleCount');
+        if (qty > 1) {
+          multiToggle.checked = true;
+          countInput.disabled = false;
+          countInput.value = qty;
+        } else {
+          multiToggle.checked = false;
+          countInput.disabled = true;
+        }
+        buildWheels();
+      }
+      renderPrizes();
+      updateHeaderStatus();
+      scheduleSave();
+    }
+
+    function renderPrizes() {
+      const el = document.getElementById('prizesList');
+      document.getElementById('prizeCountBadge').textContent = prizes.length;
+      el.innerHTML = '';
+
+      prizes.forEach((p, idx) => {
+        const card = document.createElement('div');
+        card.className = 'prize-card' + (idx === activePrizeIdx ? ' active' : '') + (p.won ? ' won' : '');
+        card.onclick = () => selectPrize(idx);
+        card.innerHTML = `
+      <button class="prize-remove" title="Remove prize" onclick="event.stopPropagation(); removePrize(${p.id})">x</button>
+      <div class="prize-img" onclick="event.stopPropagation(); uploadImg(${p.id})">
+        ${p.imgSrc ? `<img src="${p.imgSrc}" alt="Prize">` : `<span class="ph">Click to upload image</span>`}
+      </div>
+      <div class="prize-info">
+        <input type="text" placeholder="Prize name..." value="${esc(p.name)}"
+          onclick="event.stopPropagation()"
+          oninput="prizes[${idx}].name=this.value; updateHeaderStatus(); scheduleSave();">
+        <div class="prize-meta">
+          <div class="qty-wrap">
+            <span>Qty</span>
+            <input type="number" min="1" value="${p.qty}"
+              onclick="event.stopPropagation()"
+              oninput="prizes[${idx}].qty=Math.max(1,+this.value||1); scheduleSave();">
+          </div>
+          <span class="prize-select-pill">${idx === activePrizeIdx ? 'Active' : 'Select'}</span>
+        </div>
+      </div>`;
+        el.appendChild(card);
+      });
+    }
+
+    function compressImage(file, maxDim = 600) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = ev => {
+          const img = new Image();
+          img.onload = () => {
+            let w = img.width, h = img.height;
+            if (w > maxDim || h > maxDim) {
+              if (w >= h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
+              else { w = Math.round(w * (maxDim / h)); h = maxDim; }
+            }
+            const c = document.createElement('canvas');
+            c.width = w;
+            c.height = h;
+            const cx = c.getContext('2d');
+            cx.drawImage(img, 0, 0, w, h);
+            // Use WebP when supported for compact size, otherwise JPEG
+            let dataUrl = c.toDataURL('image/webp', 0.85);
+            if (!dataUrl.startsWith('data:image/webp')) {
+              dataUrl = c.toDataURL('image/jpeg', 0.85);
+            }
+            resolve(dataUrl);
+          };
+          img.onerror = () => resolve(ev.target.result);
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function uploadImg(prizeId) {
+      const inp = document.createElement('input');
+      inp.type = 'file';
+      inp.accept = 'image/*';
+      inp.onchange = async e => {
+        const f = e.target.files[0];
+        if (!f) return;
+        const dataUrl = await compressImage(f);
+        const p = prizes.find(x => x.id === prizeId);
+        if (p) {
+          p.imgSrc = dataUrl;
+          renderPrizes();
+          scheduleSave();
+        }
+      };
+      inp.click();
+    }
+
+    function esc(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // ═══════════════════════════════════════
+    //  PARTICIPANTS
+    // ═══════════════════════════════════════
+    const namesInput = document.getElementById('namesInput');
+    let syncTimer = null;
+
+    namesInput.addEventListener('input', () => {
+      updateCount();
+      clearTimeout(syncTimer);
+      syncTimer = setTimeout(() => {
+        const lines = getTextareaNames();
+        participants = lines;
+        buildWheels();
+        updateHeaderStatus();
+        scheduleSave();
+      }, 220);
+    });
+
+    document.getElementById('removeWinnerToggle').addEventListener('change', scheduleSave);
+
+    function getTextareaNames() {
+      return namesInput.value.split('\n').map(l => l.trim()).filter(Boolean);
+    }
+
+    function updateCount() {
+      const n = getTextareaNames().length;
+      document.getElementById('nameCount').textContent = n;
+    }
+
+    function loadNames() {
+      const lines = getTextareaNames();
+      if (lines.length < 2) {
+        alert('Please enter at least 2 participant names.');
+        return;
+      }
+      participants = lines;
+      buildWheels();
+      updateHeaderStatus();
+      scheduleSave();
+    }
+
+    function shuffleNames() {
+      const lines = getTextareaNames();
+      for (let i = lines.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [lines[i], lines[j]] = [lines[j], lines[i]];
+      }
+      namesInput.value = lines.join('\n');
+      participants = lines;
+      updateCount();
+      buildWheels();
+      scheduleSave();
+    }
+
+    function clearNames() {
+      namesInput.value = '';
+      participants = [];
+      updateCount();
+      buildWheels();
+      hideWinner();
+      updateHeaderStatus();
+      scheduleSave();
+    }
+
+    function resetAll() {
+      if (!confirm('Reset all participants and mark all prizes as unraffled? (Your prize list and images will be kept.)')) {
+        return;
+      }
+      clearNames();
+      prizes.forEach(p => p.won = false);
+      activePrizeIdx = prizes.length ? 0 : null;
+      allWinners = [];
+      renderPrizes();
+      closeResultsModal(false);
+      buildWheels();
+      updateHeaderStatus();
+      scheduleSave();
+    }
+
+    function updateHeaderStatus() {
+      const el = document.getElementById('headerStatus');
+      const prizeName = activePrizeIdx !== null && prizes[activePrizeIdx]
+        ? (prizes[activePrizeIdx].name || 'Untitled Prize')
+        : 'No prize selected';
+      const count = getCount();
+      el.innerHTML = `Prize: <strong>${esc(prizeName)}</strong> &middot; Wheels: <strong>${count}</strong> &middot; Entries: <strong>${participants.length}</strong>`;
+    }
+
+    // ═══════════════════════════════════════
+    //  DYNAMIC WHEEL SIZING & BUILDING
+    // ═══════════════════════════════════════
+    function getCount() {
+      return document.getElementById('multiToggle').checked
+        ? Math.min(20, Math.max(1, +document.getElementById('raffleCount').value || 1))
+        : 1;
+    }
+
+    function computeWheelSize(count) {
+      const area = document.getElementById('wheelsArea');
+      const W = area.clientWidth || 600;
+      const H = area.clientHeight || 400;
+      const gap = 14;
+      const topLabelH = 26;
+
+      if (count === 1) {
+        return Math.max(160, Math.min(W - 20, H - topLabelH - 10, 460));
+      }
+
+      // Find grid (cols x rows) that maximizes wheel diameter
+      let best = 90;
+      for (let cols = 1; cols <= count; cols++) {
+        const rows = Math.ceil(count / cols);
+        const maxW = (W - gap * (cols - 1) - 8) / cols;
+        const maxH = (H - gap * (rows - 1) - 8) / rows - topLabelH;
+        const size = Math.min(maxW, maxH);
+        if (size > best) best = size;
+      }
+      return Math.max(85, Math.floor(best));
+    }
+
+    function splitParticipants(list, count) {
+      const buckets = Array.from({ length: count }, () => []);
+      if (!list.length) return buckets;
+      // Shuffle a copy so entries are distributed randomly and evenly across wheels
+      const shuffled = [...list];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      shuffled.forEach((name, idx) => {
+        buckets[idx % count].push(name);
+      });
+      return buckets;
+    }
+
+    function buildWheels() {
+      const area = document.getElementById('wheelsArea');
+      area.innerHTML = '';
+      wheels = [];
+
+      const count = getCount();
+      const single = count === 1;
+      const size = computeWheelSize(count);
+      const buckets = splitParticipants(participants, count);
+
+      for (let i = 0; i < count; i++) {
+        const card = document.createElement('div');
+        card.className = 'wheel-card';
+
+        const top = document.createElement('div');
+        top.className = 'slot-top';
+        if (!single) {
+          top.innerHTML = `<span class="slot-num">#${i + 1}</span><span class="slot-winner-pill" id="sw${i}"></span>`;
+        }
+        card.appendChild(top);
+
+        const box = document.createElement('div');
+        box.className = 'wheel-box';
+        box.style.width = size + 'px';
+        box.style.height = size + 'px';
+
+        const ptrW = Math.max(12, Math.round(size * 0.065));
+        const ptr = document.createElement('div');
+        ptr.className = 'wheel-pointer';
+        ptr.innerHTML = `<svg width="${ptrW}" height="${Math.round(ptrW * 1.25)}" viewBox="0 0 20 25">
+      <polygon points="10,25 0,0 20,0" fill="#fbbf24" stroke="#0b0d17" stroke-width="1.5"/>
+    </svg>`;
+        box.appendChild(ptr);
+
+        const canvas = document.createElement('canvas');
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = size * dpr;
+        canvas.height = size * dpr;
+        box.appendChild(canvas);
+
+        if (single) {
+          const btn = document.createElement('button');
+          btn.className = 'wheel-center-btn';
+          const btnSize = Math.max(46, Math.round(size * 0.16));
+          btn.style.width = btnSize + 'px';
+          btn.style.height = btnSize + 'px';
+          btn.style.fontSize = Math.max(10, Math.round(btnSize * 0.2)) + 'px';
+          btn.textContent = 'SPIN';
+          btn.id = 'centerBtn';
+          btn.onclick = startSpin;
+          box.appendChild(btn);
+        }
+
+        card.appendChild(box);
+        area.appendChild(card);
+
+        wheels.push({
+          canvas,
+          ctx: canvas.getContext('2d'),
+          size,
+          dpr,
+          angle: 0,
+          entries: buckets[i],
+          winnerIdx: null
+        });
+      }
+
+      wheels.forEach(w => drawWheel(w));
+    }
+
+    window.addEventListener('resize', () => {
+      if (!spinning) buildWheels();
+    });
+
+    // ═══════════════════════════════════════
+    //  DRAWING
+    // ═══════════════════════════════════════
+    function drawWheel(w) {
+      const { canvas, ctx, size, dpr } = w;
+      const list = w.entries || [];
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, size, size);
+
+      const cx = size / 2;
+      const cy = size / 2;
+      const r = size / 2 - 6;
+
+      if (!list.length) {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(245, 158, 11, 0.35)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+        ctx.font = `600 ${Math.max(10, Math.round(size * 0.065))}px Inter`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(participants.length ? 'Empty' : 'Add names', cx, cy);
+        ctx.restore();
+        return;
+      }
+
+      const n = list.length;
+      const arc = (Math.PI * 2) / n;
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(w.angle);
+
+      // Only draw labels when slices are wide enough to read cleanly
+      const sliceEdgePx = r * arc;
+      const showLabels = sliceEdgePx >= 9;
+
+      for (let i = 0; i < n; i++) {
+        const a = i * arc;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, r, a, a + arc);
+        ctx.closePath();
+        ctx.fillStyle = COLORS[i % COLORS.length];
+        ctx.fill();
+
+        if (n <= 60) {
+          ctx.strokeStyle = 'rgba(11, 13, 23, 0.25)';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+
+        if (showLabels) {
+          ctx.save();
+          ctx.rotate(a + arc / 2);
+          ctx.textAlign = 'right';
+          ctx.textBaseline = 'middle';
+          const fs = Math.min(13, Math.max(7, sliceEdgePx * 0.52));
+          ctx.font = `700 ${fs}px Inter`;
+          ctx.fillStyle = '#fff';
+          ctx.shadowColor = 'rgba(0,0,0,0.65)';
+          ctx.shadowBlur = 2;
+          const maxChars = Math.max(5, Math.floor(r / (fs * 0.72)));
+          const nm = list[i].length > maxChars
+            ? list[i].slice(0, maxChars - 1) + '..'
+            : list[i];
+          ctx.fillText(nm, r - 8, 0);
+          ctx.restore();
+        }
+      }
+      ctx.restore();
+
+      // Outer rim
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(251, 191, 36, 0.85)';
+      ctx.lineWidth = Math.max(2, size * 0.014);
+      ctx.stroke();
+
+      // Center cap for multi-wheels
+      if (getCount() > 1) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, Math.max(6, size * 0.06), 0, Math.PI * 2);
+        ctx.fillStyle = '#131626';
+        ctx.fill();
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
+    // ═══════════════════════════════════════
+    //  SPIN LOGIC
+    // ═══════════════════════════════════════
+    let needsWheelRebuild = false;
+
+    function startSpin() {
+      if (spinning) return;
+      if (participants.length < 2) {
+        alert('Add at least 2 participants to spin.');
+        return;
+      }
+
+      const count = getCount();
+      if (count > participants.length) {
+        alert(`You requested ${count} wheels, but there are only ${participants.length} participants.`);
+        return;
+      }
+
+      // Ensure wheels have fresh disjoint distributions before spinning
+      if (needsWheelRebuild || wheels.some(w => !w.entries || !w.entries.length)) {
+        buildWheels();
+        needsWheelRebuild = false;
+      }
+
+      spinning = true;
+      setBtnsDisabled(true);
+      hideWinner();
+      closeResultsModal(false);
+      allWinners = [];
+
+      wheels.forEach((_, i) => {
+        const sw = document.getElementById(`sw${i}`);
+        if (sw) { sw.classList.remove('show'); sw.textContent = ''; }
+      });
+
+      if (count === 1) {
+        spinOne(0, () => {
+          const w = wheels[0];
+          const name = w.entries[w.winnerIdx];
+          const prize = activePrizeIdx !== null && prizes[activePrizeIdx] ? prizes[activePrizeIdx].name : '';
+          showWinner('Winner', name, prize);
+          confetti();
+          allWinners.push({ name, prize });
+          if (document.getElementById('removeWinnerToggle').checked) {
+            const idx = participants.indexOf(name);
+            if (idx !== -1) participants.splice(idx, 1);
+            namesInput.value = participants.join('\n');
+            updateCount();
+            needsWheelRebuild = true;
+          }
+          finish();
+        });
+      } else {
+        let done = 0;
+
+        wheels.forEach((w, si) => {
+          setTimeout(() => {
+            spinOne(si, () => {
+              const name = w.entries[w.winnerIdx];
+              const prize = activePrizeIdx !== null && prizes[activePrizeIdx] ? prizes[activePrizeIdx].name : '';
+              const sw = document.getElementById(`sw${si}`);
+              if (sw) {
+                sw.textContent = name;
+                sw.classList.add('show');
+              }
+              allWinners.push({ name, prize, slot: si + 1 });
+              done++;
+              if (done === count) {
+                confetti();
+                const summary = count <= 3
+                  ? allWinners.map(x => x.name).join(' , ')
+                  : `${count} Winners Selected`;
+                showWinner('Winners', summary, prize);
+                if (document.getElementById('removeWinnerToggle').checked) {
+                  allWinners.forEach(win => {
+                    const idx = participants.indexOf(win.name);
+                    if (idx !== -1) participants.splice(idx, 1);
+                  });
+                  namesInput.value = participants.join('\n');
+                  updateCount();
+                  needsWheelRebuild = true;
+                }
+                finish();
+              }
+            });
+          }, si * 120);
+        });
+      }
+    }
+
+    function spinOne(slot, cb) {
+      const w = wheels[slot];
+      const list = w.entries;
+      const n = list.length;
+      const arc = (Math.PI * 2) / n;
+      const wi = Math.floor(Math.random() * n);
+      w.winnerIdx = wi;
+
+      const seg = wi * arc + arc / 2;
+      const extra = 5 + Math.floor(Math.random() * 4);
+      const target = -seg - Math.PI / 2 + extra * Math.PI * 2;
+      const start = w.angle;
+      const rot = target - start;
+      const dur = 3200 + Math.random() * 1400;
+      const t0 = performance.now();
+
+      (function frame(now) {
+        const p = Math.min((now - t0) / dur, 1);
+        const e = 1 - Math.pow(1 - p, 3);
+        w.angle = start + rot * e;
+        drawWheel(w);
+        if (p < 1) requestAnimationFrame(frame);
+        else { w.angle = target; drawWheel(w); cb(); }
+      })(t0);
+    }
+
+    function finish() {
+      spinning = false;
+      setBtnsDisabled(false);
+      showResultsModal();
+      updateHeaderStatus();
+
+      if (activePrizeIdx !== null && prizes[activePrizeIdx]) {
+        const p = prizes[activePrizeIdx];
+        const wonCount = allWinners.filter(w => w.prize === p.name).length;
+        if (wonCount >= p.qty) {
+          p.won = true;
+          renderPrizes();
+        }
+      }
+
+      scheduleSave();
+    }
+
+    function setBtnsDisabled(d) {
+      document.getElementById('spinBtn').disabled = d;
+      const c = document.getElementById('centerBtn');
+      if (c) c.disabled = d;
+    }
+
+    // ═══════════════════════════════════════
+    //  WINNER DISPLAY
+    // ═══════════════════════════════════════
+    function showWinner(tag, name, prize) {
+      document.getElementById('winnerIdle').style.display = 'none';
+      const el = document.getElementById('winnerReveal');
+      document.getElementById('wrTag').textContent = tag;
+      document.getElementById('wrName').textContent = name;
+      document.getElementById('wrPrize').textContent = prize ? `Prize: ${prize}` : '';
+      el.classList.remove('show');
+      void el.offsetWidth;
+      el.classList.add('show');
+    }
+
+    function hideWinner() {
+      document.getElementById('winnerReveal').classList.remove('show');
+      document.getElementById('winnerIdle').style.display = 'block';
+    }
+
+    function showResultsModal() {
+      if (!allWinners.length) return;
+      const modal = document.getElementById('resultsModal');
+      const grid = document.getElementById('resultsGrid');
+      const imgEl = document.getElementById('rmPrizeImg');
+      const titleEl = document.getElementById('rmTitle');
+      const subEl = document.getElementById('rmPrizeName');
+
+      const prizeObj = activePrizeIdx !== null ? prizes[activePrizeIdx] : null;
+      if (prizeObj && prizeObj.imgSrc) {
+        imgEl.src = prizeObj.imgSrc;
+        imgEl.style.display = 'block';
+      } else {
+        imgEl.style.display = 'none';
+      }
+
+      titleEl.textContent = allWinners.length === 1 ? 'Winner Selected' : `${allWinners.length} Winners Selected`;
+      subEl.textContent = prizeObj ? (prizeObj.name || 'Prize') : 'Raffle Results';
+
+      grid.innerHTML = '';
+      grid.classList.toggle('single-col', allWinners.length === 1);
+
+      allWinners.forEach((w, i) => {
+        const item = document.createElement('div');
+        item.className = 'res-item';
+        item.innerHTML = `<span class="res-num">#${i + 1}</span><span class="res-name" title="${esc(w.name)}">${esc(w.name)}</span>`;
+        grid.appendChild(item);
+      });
+
+      modal.classList.add('show');
+    }
+
+    function closeResultsModal(rebuildIfNeeded = true) {
+      document.getElementById('resultsModal').classList.remove('show');
+      if (rebuildIfNeeded && needsWheelRebuild) {
+        needsWheelRebuild = false;
+        buildWheels();
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeResultsModal();
+    });
+
+    function togglePresenterMode() {
+      const active = document.body.classList.toggle('presenter-mode');
+      const btn = document.getElementById('presenterBtn');
+      btn.classList.toggle('presenter-active', active);
+      btn.textContent = active ? 'Exit Presenter' : 'Presenter View';
+      if (!spinning) buildWheels();
+    }
+
+    function onToggleMulti() {
+      const on = document.getElementById('multiToggle').checked;
+      document.getElementById('raffleCount').disabled = !on;
+      buildWheels();
+      updateHeaderStatus();
+      scheduleSave();
+    }
+
+    function onCountChange() {
+      buildWheels();
+      updateHeaderStatus();
+      scheduleSave();
+    }
+
+    // ═══════════════════════════════════════
+    //  SAVE SYSTEM (IndexedDB + Save File)
+    // ═══════════════════════════════════════
+    const DB_NAME = 'yep_raffle_db';
+    const STORE_NAME = 'saves';
+    const SAVE_KEY = 'autosave';
+    let dbPromise = null;
+    let saveTimer = null;
+
+    function openDB() {
+      if (dbPromise) return dbPromise;
+      dbPromise = new Promise((resolve, reject) => {
+        if (!window.indexedDB) { reject(new Error('IndexedDB unavailable')); return; }
+        const req = indexedDB.open(DB_NAME, 1);
+        req.onupgradeneeded = () => {
+          const db = req.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME);
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+      return dbPromise;
+    }
+
+    function buildSavePayload() {
+      return {
+        version: 1,
+        savedAt: new Date().toISOString(),
+        participants: [...participants],
+        prizes: prizes.map(p => ({ ...p })),
+        activePrizeIdx,
+        prizeIdCounter,
+        multi: document.getElementById('multiToggle').checked,
+        raffleCount: +document.getElementById('raffleCount').value || 2,
+        removeWinner: document.getElementById('removeWinnerToggle').checked
+      };
+    }
+
+    function applySavePayload(data) {
+      if (!data || typeof data !== 'object') return false;
+      participants = Array.isArray(data.participants) ? data.participants.map(String) : [];
+      namesInput.value = participants.join('\n');
+      updateCount();
+
+      prizes = Array.isArray(data.prizes) ? data.prizes.map((p, idx) => ({
+        id: typeof p.id === 'number' ? p.id : idx,
+        name: String(p.name || ''),
+        qty: Math.max(1, +p.qty || 1),
+        imgSrc: p.imgSrc || null,
+        won: Boolean(p.won)
+      })) : [];
+
+      prizeIdCounter = typeof data.prizeIdCounter === 'number'
+        ? data.prizeIdCounter
+        : (prizes.reduce((m, p) => Math.max(m, p.id), -1) + 1);
+
+      activePrizeIdx = (typeof data.activePrizeIdx === 'number' && prizes[data.activePrizeIdx])
+        ? data.activePrizeIdx
+        : (prizes.length ? 0 : null);
+
+      const multiOn = Boolean(data.multi);
+      document.getElementById('multiToggle').checked = multiOn;
+      document.getElementById('raffleCount').disabled = !multiOn;
+      document.getElementById('raffleCount').value = Math.min(20, Math.max(1, +data.raffleCount || 2));
+      document.getElementById('removeWinnerToggle').checked = data.removeWinner !== false;
+
+      renderPrizes();
+      buildWheels();
+      updateHeaderStatus();
+      return true;
+    }
+
+    async function persistNow() {
+      const badge = document.getElementById('saveBadge');
+      try {
+        const db = await openDB();
+        const payload = buildSavePayload();
+        await new Promise((resolve, reject) => {
+          const tx = db.transaction(STORE_NAME, 'readwrite');
+          tx.objectStore(STORE_NAME).put(payload, SAVE_KEY);
+          tx.oncomplete = resolve;
+          tx.onerror = () => reject(tx.error);
+        });
+        if (badge) {
+          badge.textContent = 'Saved';
+          badge.classList.remove('saving');
+        }
+      } catch (err) {
+        console.warn('Auto-save failed:', err);
+        if (badge) {
+          badge.textContent = 'Save Error';
+          badge.classList.add('saving');
+        }
+      }
+    }
+
+    function scheduleSave() {
+      const badge = document.getElementById('saveBadge');
+      if (badge) {
+        badge.textContent = 'Saving...';
+        badge.classList.add('saving');
+      }
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(persistNow, 300);
+    }
+
+    async function loadSavedState() {
+      try {
+        const db = await openDB();
+        const data = await new Promise((resolve, reject) => {
+          const tx = db.transaction(STORE_NAME, 'readonly');
+          const req = tx.objectStore(STORE_NAME).get(SAVE_KEY);
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+        return applySavePayload(data);
+      } catch (err) {
+        console.warn('Could not load saved state:', err);
+        return false;
+      }
+    }
+
+    function exportSaveFile() {
+      const payload = buildSavePayload();
+      const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const stamp = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `yep-raffle-save-${stamp}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importSaveFile() {
+      const inp = document.createElement('input');
+      inp.type = 'file';
+      inp.accept = '.json,application/json';
+      inp.onchange = e => {
+        const f = e.target.files[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = ev => {
+          try {
+            const data = JSON.parse(ev.target.result);
+            if (applySavePayload(data)) {
+              persistNow();
+            } else {
+              alert('Invalid save file.');
+            }
+          } catch {
+            alert('Could not read save file.');
+          }
+        };
+        r.readAsText(f);
+      };
+      inp.click();
+    }
+
+    // ═══════════════════════════════════════
+    //  CONFETTI
+    // ═══════════════════════════════════════
+    function confetti() {
+      const c = document.getElementById('confettiLayer');
+      const cols = ['#f59e0b', '#ef4444', '#3b82f6', '#22c55e', '#ec4899', '#8b5cf6', '#eab308'];
+      for (let i = 0; i < 65; i++) {
+        const p = document.createElement('div');
+        p.className = 'confetti-bit';
+        p.style.left = Math.random() * 100 + 'vw';
+        const s = 5 + Math.random() * 6;
+        p.style.width = s + 'px';
+        p.style.height = s + 'px';
+        p.style.background = cols[Math.floor(Math.random() * cols.length)];
+        p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        p.style.animationDuration = (1.6 + Math.random() * 2.2) + 's';
+        p.style.animationDelay = (Math.random() * 0.8) + 's';
+        p.style.opacity = 0.75 + Math.random() * 0.25;
+        c.appendChild(p);
+        setTimeout(() => p.remove(), 4500);
+      }
+    }
+
+    // ═══════════════════════════════════════
+    //  INIT
+    // ═══════════════════════════════════════
+    (async function init() {
+      const loaded = await loadSavedState();
+      if (!loaded) {
+        addPrize('Grand Prize', 1);
+        buildWheels();
+        updateHeaderStatus();
+      }
+    })();
+  </script>
+</body>
+
+</html>
